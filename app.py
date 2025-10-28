@@ -7,15 +7,15 @@ import plotly.express as px
 st.set_page_config(page_title="Secure Dashboard", layout="centered")
 
 # --- Load credentials from secrets ---
-username = st.secrets["app_admin_username"]
-email = st.secrets["app_admin_email"]
-password = st.secrets["app_admin_password"]
+username = st.secrets["username"]
+email = st.secrets["email"]
+password = st.secrets["password"]
 
 credentials = {
     "usernames": {
         username: {
             "email": email,
-            "name": "Admin",  # Generic display name
+            "name": "Admin",
             "password": password
         }
     }
@@ -39,7 +39,7 @@ if auth_status:
     st.sidebar.success(f"Logged in as {name}")
 
     st.title("Secure Dashboard")
-    st.write("✅ Deploy works. Replace this with your schema tiles, charts, or audit panels.")
+    st.write("✅ Deploy works. Replace this with your schema tiles, Kalshi ladder logic, or NOAA audit panels.")
 
     # Example chart
     df = pd.DataFrame({
