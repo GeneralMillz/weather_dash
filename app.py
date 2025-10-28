@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import streamlit as st
 import streamlit_authenticator as stauth
 import pandas as pd
@@ -5,6 +6,9 @@ import plotly.express as px
 from datetime import datetime
 import json
 import os
+
+# Optional components (used for opening new tab / iframe)
+import streamlit.components.v1 as components
 
 # --- Page config ---
 st.set_page_config(page_title="Secure Dashboard", layout="centered")
@@ -60,6 +64,7 @@ credentials = {
 
 # --- Authenticator setup ---
 # streamlit-authenticator expects (credentials, cookie_name, key, cookie_expiry_days)
+# Keep cookie_name and key stable so existing sessions behave consistently
 authenticator = stauth.Authenticate(
     credentials,
     "dashboard_cookie",       # cookie name
@@ -262,6 +267,27 @@ if auth_status:
         st.info("🔒 Read-only mode. Interactive controls are disabled for this user.")
     else:
         st.header("Admin Controls (hidden from viewers)")
+
+        # --- Full Cockpit Access (Admin only) ---
+        st.markdown("### Full Cockpit Access")
+
+        # If your Pi is publicly reachable use https://your-domain.example
+        # If not, use an SSH tunnel from your laptop when you need remote access:
+        # ssh -L 8501:localhost:8501 jerry@your-pi-ip
+        cockpit_url = st.secrets.get("cockpit_url", "http://127.0.0.1:8501")
+
+        # Open in new tab (explicit user action)
+        if st.button("Open Full Cockpit (new tab)"):
+            js = f"window.open('{cockpit_url}', '_blank')"
+            components.html(f"<script>{js}</script>", height=0)
+
+        # Optional inline embed (may be blocked by X-Frame-Options on some proxies)
+        if st.checkbox("Embed Full Cockpit (inline)"):
+            st.markdown("**Embedded cockpit (admin only).** Use 'Open Full Cockpit' if you prefer a full tab.")
+            # components.iframe gracefully handles remote or local URLs
+            components.iframe(cockpit_url, height=1000)
+
+        # --- Existing Admin panels kept exactly the same ---
         with st.expander("Ingestion Controls"):
             run_ingest = st.button("Run ingestion")
             if run_ingest:
