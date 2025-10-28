@@ -15,19 +15,18 @@ credentials = {
     "usernames": {
         username: {
             "email": email,
-            "name": "Admin",
+            "name": "Admin",  # Generic display name
             "password": password
         }
     }
 }
 
-# --- Authenticator setup (plain text allowed) ---
+# --- Authenticator setup (no deprecated parameters) ---
 authenticator = stauth.Authenticate(
     credentials,
-    "dashboard_cookie",
-    "dashboard_signature",
-    cookie_expiry_days=7,
-    preauthorized=False
+    "dashboard_cookie",       # Cookie name
+    "dashboard_signature",    # Signature key
+    cookie_expiry_days=7
 )
 
 # --- Login ---
