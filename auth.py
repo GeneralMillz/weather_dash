@@ -26,8 +26,8 @@ def init_authenticator():
     credentials = load_credentials_from_secrets()
     authenticator = stauth.Authenticate(
         credentials,
-        "weatherdash_cookie",
-        "weatherdash_signature",
+        cookie_name="weatherdash_cookie",
+        key="weatherdash_signature",
         cookie_expiry_days=7
     )
     return authenticator
@@ -36,7 +36,10 @@ def init_authenticator():
 # Login UI
 # ─────────────────────────────────────────────
 def login_ui(authenticator):
-    name, auth_status, username = authenticator.login("Login", "sidebar")
+    name, auth_status, username = authenticator.login(
+        form_name="Login",
+        location="sidebar"
+    )
     return name, auth_status, username
 
 # ─────────────────────────────────────────────
