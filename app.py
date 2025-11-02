@@ -46,8 +46,7 @@ authenticator = stauth.Authenticate(
 )
 
 # --- Login ---
-name, auth_status, user_key = authenticator.login("Login", "main")
-
+name, auth_status, user_key = authenticator.login()
 # --- Helper ---
 def is_viewer(u_key):
     return u_key == viewer_username
