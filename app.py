@@ -1,5 +1,11 @@
+from __future__ import annotations
+import os, json
+from datetime import datetime, timezone
+from typing import Optional, Dict, Any
+
+import pandas as pd
 import streamlit as st
-import streamlit_authenticator as stauth
+import plotly.express as px
 # app.py
 """
 Secure Dashboard (improved single-file version)
@@ -11,15 +17,6 @@ Secure Dashboard (improved single-file version)
 - Modular helpers for tests and extension.
 - No external network calls at import time.
 """
-from __future__ import annotations
-import os, json
-from datetime import datetime, timezone
-from typing import Optional, Dict, Any
-
-import pandas as pd
-import streamlit as st
-import plotly.express as px
-
 # --- Page config ---
 st.set_page_config(page_title="Secure Dashboard", layout="centered")
 
