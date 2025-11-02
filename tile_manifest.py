@@ -1,44 +1,46 @@
-# tile_manifest.py — publicdash manifest
 import os
 
 # ─────────────────────────────────────────────
-# Column layout (left/mid/right)
+# Weather-focused layout
 # ─────────────────────────────────────────────
 TILES = {
     "left": [
-        "forecast_summary",
-        "signal_divergence",
+        "forecast_summary",             # Tomorrow's high temps
+        "forecast_vs_bracket",          # Bracket alignment
     ],
     "mid": [
-        "model_outputs",
-        "schema_coverage_audit",
+        "model_outputs",                # Model predictions
+        "model_confidence_heatmap",     # Confidence histogram
     ],
     "right": [
-        "forecast_vs_bracket",
-        "model_confidence_heatmap",
+        "observation_provenance",       # Source of today's observations
+        "model_freshness",              # Last model run timestamp
     ],
     "summary": [
-        "dashboard_status",
-        "forecast_accuracy_summary",
+        "pipeline_self_audit",          # Status.json summary
+        "schema_coverage_audit",        # Index/key coverage
     ],
     "admin": []
 }
 
 # ─────────────────────────────────────────────
-# Conditional admin tiles (internal only)
+# Admin-only tiles (gated by INTERNAL_MODE)
 # ─────────────────────────────────────────────
 if os.getenv("INTERNAL_MODE") == "1":
-    TILES["admin"].append("resource_tile")
-    TILES["admin"].append("simulate_launcher")  # example internal tile
-    TILES["admin"].append("run_model")          # example internal tile
+    TILES["admin"].extend([
+        "resource_tile",                # System metrics (CPU, RAM, etc.)
+        "loader_freshness",            # Recent ingest freshness
+        "partition_health",            # Partition coverage
+        "forecast_accuracy_extended",  # Forecast vs observed error
+    ])
 
 # ─────────────────────────────────────────────
-# Optional: tab labels (used in app.py)
+# Tab labels (used in app.py)
 # ─────────────────────────────────────────────
 TAB_LABELS = {
-    "left": "🧬 Signals",
-    "mid": "📊 Models",
-    "right": "📈 Forecasts",
+    "left": "🌡️ Forecasts",
+    "mid": "🧪 Models",
+    "right": "📍 Observations",
     "summary": "🧭 Summary",
     "admin": "🛠️ Admin"
 }
