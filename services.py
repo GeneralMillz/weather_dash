@@ -1,13 +1,23 @@
-# services.py — publicdash-safe version
 import os
 import pandas as pd
 from sqlalchemy import create_engine, text
+import streamlit as st # <-- NEW: Import Streamlit to access st.secrets
 
 class Services:
     def __init__(self):
-        dburl = os.getenv("DATABASE_URL")
+        # 🔥 FIX: Retrieve the database URL from st.secrets, as defined in secrets.toml
+        # This replaces the failing os.getenv() call.
+        try:
+            dburl = st.secrets["database"]["url"]
+        except KeyError as e:
+            # Handle the case where the structure is missing entirely
+            raise RuntimeError(f"Database URL configuration missing in secrets.toml: {e}") from e
+
         if not dburl:
-            raise RuntimeError("DATABASE_URL not set in environment")
+            raise RuntimeError("Database URL value is empty in secrets.toml.")
+            
+        # NOTE: If your database is not publicly accessible, this connection 
+        # (even with the correct URL) will still fail on Streamlit Cloud.
         self.engine = create_engine(dburl, pool_pre_ping=True)
 
     def query_df(self, sql: str, params=None, limit=None):
@@ -25,6 +35,9 @@ class Services:
 
     @property
     def user(self):
+        # This still uses os.getenv, which might be fine if you set an external USER variable,
+        # but if you intended to use the authenticated user, this should be accessed from the
+        # app state (which is passed to tiles, but not directly accessible here).
         return os.getenv("USER", "public")
 
     def now_iso(self):
