@@ -7,8 +7,15 @@ import copy
 # Initialize authenticator
 # ─────────────────────────────────────────────
 def init_authenticator():
+    # FIX: Use deepcopy to get a completely independent, writable copy 
+    # of the credentials dictionary from the read-only st.secrets object.
     credentials = copy.deepcopy(st.secrets["credentials"])
-    cookie = st.secrets["cookie"]
+    
+    # The 'cookie' dictionary can be used directly as it is not modified by the library, 
+    # but accessing it via st.secrets is safer than a shallow copy if it contained nested objects.
+    # However, since it is a simple dict, direct access is fine.
+    cookie = st.secrets["cookie"] 
+    
     authenticator = stauth.Authenticate(
         credentials,
         cookie["name"],
@@ -38,6 +45,9 @@ def logout_ui(authenticator, name):
 # Role detection
 # ─────────────────────────────────────────────
 def get_user_role(username):
+    # NOTE: The credentials in secrets.toml use 'admin', 'colin', 'halley' as keys.
+    # The library converts these to lowercase internally, so comparing against the 
+    # username returned by the authenticator (which is the lowercase key) is correct.
     return "viewer" if username in ["colin", "halley"] else "admin"
 
 def is_viewer(username):
