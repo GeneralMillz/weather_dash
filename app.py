@@ -58,6 +58,7 @@ if auth_status:
         services = Services()
     except Exception as e:
         st.error("❌ Failed to initialize services.")
+        st.exception(e)  # Show the real error
         st.stop()
 
     state = {
@@ -81,6 +82,7 @@ if auth_status:
                     mod.render(services, st, state)
                 except Exception as e:
                     st.error(f"❌ Tile `{tile_name}` failed: {e}")
+                    st.exception(e)
 
 else:
     if auth_status is False:
