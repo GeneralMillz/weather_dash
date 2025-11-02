@@ -6,15 +6,19 @@ import copy
 # ─────────────────────────────────────────────
 # Initialize authenticator
 # ─────────────────────────────────────────────
+# auth.py (fixed init_authenticator)
+
+# ─────────────────────────────────────────────
+# Initialize authenticator
+# ─────────────────────────────────────────────
 def init_authenticator():
-    # FIX: Use deepcopy to get a completely independent, writable copy 
-    # of the credentials dictionary from the read-only st.secrets object.
-    credentials = copy.deepcopy(st.secrets["credentials"])
+    # 🔥 THE NEW FIX: Convert the Streamlit secrets proxy object to a standard dict 
+    # before deepcopying, which breaks the infinite recursion loop in __getattr__.
+    secrets_credentials_dict = dict(st.secrets["credentials"])
+    credentials = copy.deepcopy(secrets_credentials_dict)
     
-    # The 'cookie' dictionary can be used directly as it is not modified by the library, 
-    # but accessing it via st.secrets is safer than a shallow copy if it contained nested objects.
-    # However, since it is a simple dict, direct access is fine.
-    cookie = st.secrets["cookie"] 
+    # Cookie access is fine as it's a simple dictionary access
+    cookie = st.secrets["cookie"]
     
     authenticator = stauth.Authenticate(
         credentials,
