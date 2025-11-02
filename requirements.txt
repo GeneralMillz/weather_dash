@@ -3,4 +3,4 @@ streamlit-authenticator==0.3.2
 pandas
 plotly
 sqlalchemy
-
+psycopg2
