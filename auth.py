@@ -47,8 +47,8 @@ def init_authenticator():
 # Login UI
 # ─────────────────────────────────────────────
 def login_ui(authenticator):
+    # FIX: Removed 'form_name' keyword argument, which caused a TypeError.
     name, auth_status, username = authenticator.login(
-        form_name="Login",
         location="sidebar"
     )
     return name, auth_status, username
