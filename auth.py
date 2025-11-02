@@ -4,7 +4,14 @@ from datetime import datetime
 
 def init_authenticator():
     config = st.secrets["config"]
-    authenticator = stauth.Authenticate(config)
+    credentials = config["credentials"]
+    cookie = config["cookie"]
+    authenticator = stauth.Authenticate(
+        credentials,
+        cookie["name"],
+        cookie["key"],
+        cookie["expiry_days"]
+    )
     return authenticator
 
 def login_ui(authenticator):
