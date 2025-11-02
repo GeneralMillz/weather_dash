@@ -4,7 +4,14 @@ import json, os
 from datetime import datetime, timezone
 from tile_manifest import TILES, TAB_LABELS
 from services import Services
-from auth import init_authenticator, login_ui, logout_ui, is_viewer, get_user_role, session_info
+from auth import (
+    init_authenticator,
+    login_ui,
+    logout_ui,
+    is_viewer,
+    get_user_role,
+    session_info
+)
 
 # ─────────────────────────────────────────────
 # Page config
@@ -37,13 +44,12 @@ if auth_status:
     logout_ui(authenticator, name)
 
     # Log login event
-    event = {
+    append_login_event({
         "username": user_key,
         "display_name": name,
         "login_time": login_time,
         "role": get_user_role(user_key)
-    }
-    append_login_event(event)
+    })
 
     # ─────────────────────────────────────────────
     # Services and shared state
