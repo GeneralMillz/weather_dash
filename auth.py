@@ -2,36 +2,41 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from datetime import datetime
 import copy
-import json # REQUIRED for the definitive fix
+import json 
 
 # ─────────────────────────────────────────────
 # Initialize authenticator
 # ─────────────────────────────────────────────
 def init_authenticator():
-    # 🔥 THE DEFINITIVE FIX FOR RECURSIONERROR 🔥
-    # Streamlit's st.secrets returns proxy objects. Deepcopying them 
-    # causes infinite recursion. We use JSON serialization/deserialization
-    # to convert the credentials to a pure, recursion-safe Python dict.
+    # 🔥 THE DEFINITIVE FIX: Manually convert all nested AttrDicts to pure Python dicts.
+    # This completely bypasses the RecursionError and the JSON serialization error.
     
-    # 1. Get the credentials proxy object and convert the top level to a basic dict
-    credentials_proxy = dict(st.secrets["credentials"])
-
-    # 2. Serialize to JSON string and deserialize back to a pure Python dict.
-    # This process converts all nested proxy dicts into standard dicts,
-    # breaking the recursive link.
-    try:
-        credentials_json = json.dumps(credentials_proxy)
-        credentials = json.loads(credentials_json) 
-    except Exception as e:
-        # If this step fails, something is seriously wrong with secrets structure
-        st.error(f"FATAL: Failed to convert secrets to pure dictionary: {e}")
-        return None 
+    # 1. Initialize a pure Python dictionary structure to hold the converted credentials
+    pure_credentials = {
+        'usernames': {},
+    }
     
-    # Cookie access is fine as it's a simple dictionary access
-    cookie = st.secrets["cookie"]
+    # Safely get the credentials section from secrets
+    secrets_creds = st.secrets.get("credentials", {})
     
+    # 2. Manually convert the nested 'usernames' AttrDict into a pure dict
+    usernames_proxy = secrets_creds.get('usernames', {})
+    
+    for username, user_data_proxy in usernames_proxy.items():
+        # Convert the inner user_data AttrDict (email, name, password) 
+        # to a standard Python dictionary using dict().
+        pure_credentials['usernames'][username] = dict(user_data_proxy) 
+        
+    # 3. Convert the 'cookie' AttrDict (needed for separate arguments later)
+    cookie = dict(st.secrets.get('cookie', {}))
+    
+    # 4. Add the cookie and preauthorized data back to the main credentials dict
+    pure_credentials['cookie'] = cookie
+    pure_credentials['preauthorized'] = dict(st.secrets.get('preauthorized', {}))
+    
+    # Use the now-safe dictionary for authentication
     authenticator = stauth.Authenticate(
-        credentials, # Pass the pure, recursion-safe dictionary
+        pure_credentials, 
         cookie["name"],
         cookie["key"],
         cookie["expiry_days"]
