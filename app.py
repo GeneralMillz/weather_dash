@@ -117,7 +117,9 @@ def build_credentials() -> Dict[str, Any]:
     return {"usernames": usernames}
 
 def append_login_event(event: dict):
-credentials = build_credentials()
+    """Append a login event to the log file."""
+    append_jsonl(LOG_PATH, event)
+    try_db_log(event)
 
 # If stauth present, use it for cookie-based login; otherwise present fallback username/password entry.
 authenticator = None
