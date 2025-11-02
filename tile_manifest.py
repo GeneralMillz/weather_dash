@@ -13,7 +13,6 @@ TILES = {
         "model_confidence_heatmap",     # Confidence histogram
     ],
     "right": [
-        "observation_provenance",       # Source of today's observations
         "model_freshness",              # Last model run timestamp
     ],
     "summary": [
@@ -29,9 +28,10 @@ TILES = {
 if os.getenv("INTERNAL_MODE") == "1":
     TILES["admin"].extend([
         "resource_tile",                # System metrics (CPU, RAM, etc.)
-        "loader_freshness",            # Recent ingest freshness
-        "partition_health",            # Partition coverage
-        "forecast_accuracy_extended",  # Forecast vs observed error
+        # Optional: uncomment if these tiles exist and are safe
+        # "loader_freshness",
+        # "partition_health",
+        # "forecast_accuracy_extended",
     ])
 
 # ─────────────────────────────────────────────
