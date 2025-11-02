@@ -3,14 +3,11 @@ import streamlit_authenticator as stauth
 from datetime import datetime
 
 def init_authenticator():
-    config = st.secrets["config"]
-    credentials = config["credentials"]
-    cookie = config["cookie"]
     authenticator = stauth.Authenticate(
-        credentials,
-        cookie["name"],
-        cookie["key"],
-        cookie["expiry_days"]
+        st.secrets["credentials"],
+        st.secrets["cookie"]["name"],
+        st.secrets["cookie"]["key"],
+        st.secrets["cookie"]["expiry_days"]
     )
     return authenticator
 
