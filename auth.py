@@ -2,26 +2,36 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from datetime import datetime
 import copy
-
-# ─────────────────────────────────────────────
-# Initialize authenticator
-# ─────────────────────────────────────────────
-# auth.py (fixed init_authenticator)
+import json # REQUIRED for the definitive fix
 
 # ─────────────────────────────────────────────
 # Initialize authenticator
 # ─────────────────────────────────────────────
 def init_authenticator():
-    # 🔥 THE NEW FIX: Convert the Streamlit secrets proxy object to a standard dict 
-    # before deepcopying, which breaks the infinite recursion loop in __getattr__.
-    secrets_credentials_dict = dict(st.secrets["credentials"])
-    credentials = copy.deepcopy(secrets_credentials_dict)
+    # 🔥 THE DEFINITIVE FIX FOR RECURSIONERROR 🔥
+    # Streamlit's st.secrets returns proxy objects. Deepcopying them 
+    # causes infinite recursion. We use JSON serialization/deserialization
+    # to convert the credentials to a pure, recursion-safe Python dict.
+    
+    # 1. Get the credentials proxy object and convert the top level to a basic dict
+    credentials_proxy = dict(st.secrets["credentials"])
+
+    # 2. Serialize to JSON string and deserialize back to a pure Python dict.
+    # This process converts all nested proxy dicts into standard dicts,
+    # breaking the recursive link.
+    try:
+        credentials_json = json.dumps(credentials_proxy)
+        credentials = json.loads(credentials_json) 
+    except Exception as e:
+        # If this step fails, something is seriously wrong with secrets structure
+        st.error(f"FATAL: Failed to convert secrets to pure dictionary: {e}")
+        return None 
     
     # Cookie access is fine as it's a simple dictionary access
     cookie = st.secrets["cookie"]
     
     authenticator = stauth.Authenticate(
-        credentials,
+        credentials, # Pass the pure, recursion-safe dictionary
         cookie["name"],
         cookie["key"],
         cookie["expiry_days"]
@@ -49,9 +59,7 @@ def logout_ui(authenticator, name):
 # Role detection
 # ─────────────────────────────────────────────
 def get_user_role(username):
-    # NOTE: The credentials in secrets.toml use 'admin', 'colin', 'halley' as keys.
-    # The library converts these to lowercase internally, so comparing against the 
-    # username returned by the authenticator (which is the lowercase key) is correct.
+    # Assign 'viewer' role to specific users, otherwise 'admin'.
     return "viewer" if username in ["colin", "halley"] else "admin"
 
 def is_viewer(username):
