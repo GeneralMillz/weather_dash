@@ -5,21 +5,24 @@ import os
 # ─────────────────────────────────────────────
 TILES = {
     "left": [
-        "forecast_summary",             # Tomorrow's high temps
-        "forecast_vs_bracket",          # Bracket alignment
+        "forecast_summary",
+        "forecast_vs_bracket",
     ],
     "mid": [
-        "model_outputs",                # Model predictions
-        "model_confidence_heatmap",     # Confidence histogram
+        "model_outputs",
+        "model_confidence_heatmap",
     ],
     "right": [
-        "model_freshness",              # Last model run timestamp
+        "model_freshness",
     ],
     "summary": [
-        "pipeline_self_audit",          # Status.json summary
-        "schema_coverage_audit",        # Index/key coverage
+        "pipeline_self_audit",
+        "schema_coverage_audit",
     ],
-    "admin": []
+    "admin": [],
+    "fun": [            # new tab for lightweight public games
+        "rps_app",      # Rock Paper Scissors single-file app
+    ],
 }
 
 # ─────────────────────────────────────────────
@@ -27,11 +30,7 @@ TILES = {
 # ─────────────────────────────────────────────
 if os.getenv("INTERNAL_MODE") == "1":
     TILES["admin"].extend([
-        "resource_tile",                # System metrics (CPU, RAM, etc.)
-        # Optional: uncomment if these tiles exist and are safe
-        # "loader_freshness",
-        # "partition_health",
-        # "forecast_accuracy_extended",
+        "resource_tile",
     ])
 
 # ─────────────────────────────────────────────
@@ -42,5 +41,6 @@ TAB_LABELS = {
     "mid": "🧪 Models",
     "right": "📍 Observations",
     "summary": "🧭 Summary",
-    "admin": "🛠️ Admin"
+    "admin": "🛠️ Admin",
+    "fun": "🎮 Games",     # label for the new tab
 }
