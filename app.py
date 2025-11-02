@@ -1,16 +1,17 @@
 from __future__ import annotations
 import streamlit as st
 import streamlit_authenticator as stauth
-import pandas as pd
-import plotly.express as px
 import json, os
 from datetime import datetime, timezone
 from tile_manifest import TILES, TAB_LABELS
+from services import Services
 
 # ─────────────────────────────────────────────
 # Page config
 # ─────────────────────────────────────────────
-st.set_page_config(page_title="Secure Dashboard", layout="centered")
+st.set_page_config(page_title="Kalshi Weather Cockpit", layout="wide")
+st.markdown("# 🧭 Kalshi Weather Cockpit")
+st.caption("Public dashboard — viewer-safe tiles only")
 
 # ─────────────────────────────────────────────
 # Load credentials from secrets
@@ -23,9 +24,6 @@ viewer_username = st.secrets["viewer_username"]
 viewer_email = st.secrets["viewer_email"]
 viewer_password = st.secrets["viewer_password"]
 
-# ─────────────────────────────────────────────
-# Build credentials dictionary
-# ─────────────────────────────────────────────
 credentials = {
     "usernames": {
         admin_username: {
@@ -41,9 +39,6 @@ credentials = {
     }
 }
 
-# ─────────────────────────────────────────────
-# Authenticator setup
-# ─────────────────────────────────────────────
 authenticator = stauth.Authenticate(
     credentials,
     "dashboard_cookie",
@@ -74,10 +69,9 @@ def append_login_event(event: dict):
 # ─────────────────────────────────────────────
 if auth_status:
     login_time = datetime.now(timezone.utc).isoformat()
-    st.sidebar.markdown(f"**User**: {user_key}")
-    st.sidebar.markdown(f"**Login (UTC)**: {login_time}")
     authenticator.logout("Logout", "sidebar")
-    st.sidebar.success(f"Logged in as {name}")
+    st.sidebar.markdown(f"👤 **{name}** ({user_key})")
+    st.sidebar.caption(f"🔒 Session started: {login_time[:16]} UTC")
 
     # Log login event
     event = {
@@ -89,27 +83,34 @@ if auth_status:
     append_login_event(event)
 
     # ─────────────────────────────────────────────
-    # Filters
+    # Services and shared state
     # ─────────────────────────────────────────────
-    st.sidebar.header("Filters")
-    station = st.sidebar.selectbox("Select Station", ["KDTW", "KGRR", "KLAN"])
-    selected_date = st.sidebar.date_input("Select Date", pd.to_datetime("2025-10-27"))
+    try:
+        services = Services()
+    except Exception as e:
+        st.error("❌ Failed to initialize services.")
+        st.stop()
+
+    state = {
+        "user": user_key,
+        "now_iso": lambda: login_time
+    }
 
     # ─────────────────────────────────────────────
     # Dashboard layout
     # ─────────────────────────────────────────────
-    st.title("Secure Dashboard")
-    st.markdown("Viewer accounts are read-only. Admins see controls below.")
+    tab_keys = list(TILES.keys())
+    tab_labels = [TAB_LABELS.get(k, k) for k in tab_keys]
+    tabs = st.tabs(tab_labels)
 
-    selected_tab = st.sidebar.radio("Dashboard Sections", list(TILES.keys()), format_func=lambda k: TAB_LABELS.get(k, k))
-    st.markdown(f"## {TAB_LABELS.get(selected_tab, selected_tab)}")
-
-    for tile_name in TILES[selected_tab]:
-        try:
-            mod = __import__(f"tiles.{tile_name}", fromlist=["render"])
-            mod.render(None, st, {"user": user_key, "now_iso": lambda: login_time})
-        except Exception as e:
-            st.error(f"❌ Tile `{tile_name}` failed: {e}")
+    for i, tab in enumerate(tabs):
+        with tab:
+            for tile_name in TILES[tab_keys[i]]:
+                try:
+                    mod = __import__(f"tiles.{tile_name}", fromlist=["render"])
+                    mod.render(services, st, state)
+                except Exception as e:
+                    st.error(f"❌ Tile `{tile_name}` failed: {e}")
 
 else:
     if auth_status is False:
