@@ -78,7 +78,7 @@ authenticator = None
 if _auth_backend == "stauth" and credentials["usernames"]:
     authenticator = stauth.Authenticate(credentials, "dashboard_cookie", "dashboard_signature", cookie_expiry_days=7)
 
-def login() -> tuple[Optional[str], Optional[bool], Optional[str]]:
+    def login() -> tuple[Optional[str], Optional[bool], Optional[str]]:
 # --- Helper: fail-safe secret loader ---
 def require_secret(key: str):
     val = st.secrets.get(key) if isinstance(st.secrets, dict) else None
