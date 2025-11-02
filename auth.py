@@ -7,7 +7,7 @@ import copy
 # Initialize authenticator
 # ─────────────────────────────────────────────
 def init_authenticator():
-    credentials = dict(st.secrets["credentials"])
+    credentials = copy.deepcopy(st.secrets["credentials"])
     cookie = st.secrets["cookie"]
     authenticator = stauth.Authenticate(
         credentials,
