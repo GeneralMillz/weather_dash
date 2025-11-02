@@ -1,10 +1,10 @@
 from __future__ import annotations
 import streamlit as st
-import streamlit_authenticator as stauth
 import json, os
 from datetime import datetime, timezone
 from tile_manifest import TILES, TAB_LABELS
 from services import Services
+from auth import init_authenticator, login_ui, logout_ui, is_viewer, get_user_role, session_info
 
 # ─────────────────────────────────────────────
 # Page config
@@ -14,45 +14,10 @@ st.markdown("# 🧭 Kalshi Weather Cockpit")
 st.caption("Public dashboard — viewer-safe tiles only")
 
 # ─────────────────────────────────────────────
-# Load credentials from secrets
+# Auth setup
 # ─────────────────────────────────────────────
-admin_username = st.secrets["admin_username"]
-admin_email = st.secrets["admin_email"]
-admin_password = st.secrets["admin_password"]
-
-viewer_username = st.secrets["viewer_username"]
-viewer_email = st.secrets["viewer_email"]
-viewer_password = st.secrets["viewer_password"]
-
-credentials = {
-    "usernames": {
-        admin_username: {
-            "email": admin_email,
-            "name": "Admin",
-            "password": admin_password
-        },
-        viewer_username: {
-            "email": viewer_email,
-            "name": "Viewer",
-            "password": viewer_password
-        }
-    }
-}
-
-authenticator = stauth.Authenticate(
-    credentials,
-    "dashboard_cookie",
-    "dashboard_signature",
-    cookie_expiry_days=7
-)
-
-# ─────────────────────────────────────────────
-# Login
-# ─────────────────────────────────────────────
-name, auth_status, user_key = authenticator.login()
-
-def is_viewer(u_key):
-    return u_key == viewer_username
+authenticator = init_authenticator()
+name, auth_status, user_key = login_ui(authenticator)
 
 def append_login_event(event: dict):
     try:
@@ -68,17 +33,15 @@ def append_login_event(event: dict):
 # Authenticated session
 # ─────────────────────────────────────────────
 if auth_status:
-    login_time = datetime.now(timezone.utc).isoformat()
-    authenticator.logout("Logout", "sidebar")
-    st.sidebar.markdown(f"👤 **{name}** ({user_key})")
-    st.sidebar.caption(f"🔒 Session started: {login_time[:16]} UTC")
+    login_time = session_info(user_key, name)
+    logout_ui(authenticator, name)
 
     # Log login event
     event = {
         "username": user_key,
         "display_name": name,
         "login_time": login_time,
-        "is_viewer": is_viewer(user_key)
+        "role": get_user_role(user_key)
     }
     append_login_event(event)
 
@@ -93,7 +56,8 @@ if auth_status:
 
     state = {
         "user": user_key,
-        "now_iso": lambda: login_time
+        "now_iso": lambda: login_time,
+        "role": get_user_role(user_key)
     }
 
     # ─────────────────────────────────────────────
