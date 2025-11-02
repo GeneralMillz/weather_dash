@@ -157,9 +157,9 @@ def try_db_log(event: Dict[str, Any]) -> None:
         return
 
 # --- Main app flow ---
-# The stauth.Authenticate object handles the UI/cookie logic when called without arguments
-# FIX: Changed to use keyword arguments for location and required key to avoid DeprecationError.
-display_name, auth_status, user_key = authenticator.login(location='main', key='dashboard_login')
+# FIX: Moving the login component to the sidebar (location='sidebar') to resolve potential TypeErrors 
+# related to component rendering in the main body.
+display_name, auth_status, user_key = authenticator.login(location='sidebar', key='dashboard_login')
 
 # --- Authenticated session ---
 if auth_status:
@@ -171,6 +171,7 @@ if auth_status:
     st.sidebar.markdown(f"**Login (UTC)**: {login_time}")
 
     try:
+        # Logout button remains in the sidebar
         authenticator.logout("Logout", "sidebar")
     except Exception:
         pass # Logout button may fail if not fully initialized, ignore
