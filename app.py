@@ -157,9 +157,10 @@ def try_db_log(event: Dict[str, Any]) -> None:
         return
 
 # --- Main app flow ---
-# FIX: Moving the login component to the sidebar (location='sidebar') to resolve potential TypeErrors 
-# related to component rendering in the main body.
-display_name, auth_status, user_key = authenticator.login(location='sidebar', key='dashboard_login')
+# FIX: The previous attempts using location='sidebar' or positional arguments failed.
+# Reverting to location='main', which is the most stable default position for stauth.login, 
+# while still using keyword arguments for stability.
+display_name, auth_status, user_key = authenticator.login(location='main', key='dashboard_login')
 
 # --- Authenticated session ---
 if auth_status:
@@ -357,4 +358,5 @@ elif auth_status is False:
     st.error("Invalid username/password.")
 else:
     # Not logged in yet (auth_status is None)
+    st.title("Secure Dashboard")
     st.info("Please log in to access the dashboard.")
