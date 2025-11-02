@@ -10,7 +10,7 @@ def init_authenticator():
     authenticator = stauth.Authenticate(
         credentials=st.secrets["credentials"],
         cookie_name=settings["cookie"]["name"],
-        key=settings["cookie"]["key"],
+        signature_key=settings["cookie"]["key"],
         cookie_expiry_days=settings["cookie"]["expiry_days"]
     )
     return authenticator
