@@ -1,14 +1,13 @@
+import streamlit as st
 from __future__ import annotations
 st.set_page_config(page_title="Secure Dashboard", layout="centered")
 
+# Now continue with other imports
 import os, json
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
-
 import pandas as pd
-import streamlit as st
 import plotly.express as px
-# app.py
 """
 Secure Dashboard (improved single-file version)
 
