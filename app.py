@@ -158,7 +158,8 @@ def try_db_log(event: Dict[str, Any]) -> None:
 
 # --- Main app flow ---
 # The stauth.Authenticate object handles the UI/cookie logic when called without arguments
-display_name, auth_status, user_key = authenticator.login("Login", "main")
+# FIX: Changed to use keyword arguments for location and required key to avoid DeprecationError.
+display_name, auth_status, user_key = authenticator.login(location='main', key='dashboard_login')
 
 # --- Authenticated session ---
 if auth_status:
