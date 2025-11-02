@@ -1,4 +1,6 @@
 from __future__ import annotations
+st.set_page_config(page_title="Secure Dashboard", layout="centered")
+
 import os, json
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any
