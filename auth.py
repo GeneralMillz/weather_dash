@@ -2,39 +2,13 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from datetime import datetime
 
-# ─────────────────────────────────────────────
-# Load credentials from secrets
-# ─────────────────────────────────────────────
-def load_credentials_from_secrets():
-    usernames = {}
-    users = st.secrets.get("users", {})
-
-    for uname, udata in users.items():
-        usernames[uname] = {
-            "email": udata["email"],
-            "name": uname.capitalize(),
-            "password": udata["password"]
-        }
-
-    credentials = {"usernames": usernames}
-    return credentials
-
-# ─────────────────────────────────────────────
-# Initialize authenticator
-# ─────────────────────────────────────────────
 def init_authenticator():
-    credentials = load_credentials_from_secrets()
     authenticator = stauth.Authenticate(
-        credentials=credentials,
-        cookie_name="weatherdash_cookie",
-        key="weatherdash_signature",
-        cookie_expiry_days=7
+        credentials=st.secrets["credentials"],
+        settings=st.secrets["settings"]
     )
     return authenticator
 
-# ─────────────────────────────────────────────
-# Login UI
-# ─────────────────────────────────────────────
 def login_ui(authenticator):
     name, auth_status, username = authenticator.login(
         form_name="Login",
@@ -42,18 +16,12 @@ def login_ui(authenticator):
     )
     return name, auth_status, username
 
-# ─────────────────────────────────────────────
-# Logout UI
-# ─────────────────────────────────────────────
 def logout_ui(authenticator, name):
-    authenticator.logout(button_name="Logout", location="sidebar")
+    authenticator.logout("Logout", "sidebar")
     st.sidebar.success(f"Logged in as {name}")
 
-# ─────────────────────────────────────────────
-# Role detection
-# ─────────────────────────────────────────────
 def get_user_role(username):
-    return st.secrets["users"].get(username, {}).get("role", "viewer")
+    return "viewer" if username in ["colin", "halley"] else "admin"
 
 def is_viewer(username):
     return get_user_role(username) == "viewer"
@@ -61,9 +29,6 @@ def is_viewer(username):
 def is_admin(username):
     return get_user_role(username) == "admin"
 
-# ─────────────────────────────────────────────
-# Session info display
-# ─────────────────────────────────────────────
 def session_info(username, name):
     login_time = datetime.utcnow().isoformat()
     st.sidebar.markdown(f"👤 **{name}** ({username})")
