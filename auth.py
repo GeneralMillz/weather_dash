@@ -25,7 +25,7 @@ def load_credentials_from_secrets():
 def init_authenticator():
     credentials = load_credentials_from_secrets()
     authenticator = stauth.Authenticate(
-        credentials,
+        credentials=credentials,
         cookie_name="weatherdash_cookie",
         key="weatherdash_signature",
         cookie_expiry_days=7
@@ -46,7 +46,7 @@ def login_ui(authenticator):
 # Logout UI
 # ─────────────────────────────────────────────
 def logout_ui(authenticator, name):
-    authenticator.logout("Logout", "sidebar")
+    authenticator.logout(button_name="Logout", location="sidebar")
     st.sidebar.success(f"Logged in as {name}")
 
 # ─────────────────────────────────────────────
