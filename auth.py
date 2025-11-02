@@ -2,46 +2,67 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from datetime import datetime
 
+# ─────────────────────────────────────────────
+# Load credentials from secrets
+# ─────────────────────────────────────────────
 def load_credentials_from_secrets():
-    admin_username = st.secrets["admin_username"]
-    admin_email = st.secrets["admin_email"]
-    admin_password = st.secrets["admin_password"]
-    viewer_username = st.secrets["viewer_username"]
-    viewer_email = st.secrets["viewer_email"]
-    viewer_password = st.secrets["viewer_password"]
+    usernames = {}
+    users = st.secrets.get("users", {})
 
-    credentials = {
-        "usernames": {
-            admin_username: {"email": admin_email, "name": "Admin", "password": admin_password},
-            viewer_username: {"email": viewer_email, "name": "Viewer", "password": viewer_password},
+    for uname, udata in users.items():
+        usernames[uname] = {
+            "email": udata["email"],
+            "name": uname.capitalize(),
+            "password": udata["password"]
         }
-    }
-    return credentials, admin_username, viewer_username
 
+    credentials = {"usernames": usernames}
+    return credentials
+
+# ─────────────────────────────────────────────
+# Initialize authenticator
+# ─────────────────────────────────────────────
 def init_authenticator():
-    credentials, admin_username, viewer_username = load_credentials_from_secrets()
+    credentials = load_credentials_from_secrets()
     authenticator = stauth.Authenticate(
         credentials,
         "weatherdash_cookie",
         "weatherdash_signature",
         cookie_expiry_days=7
     )
-    return authenticator, admin_username, viewer_username
+    return authenticator
 
+# ─────────────────────────────────────────────
+# Login UI
+# ─────────────────────────────────────────────
 def login_ui(authenticator):
-    # For streamlit-authenticator v0.4.2 use positional args: form_name, location
     name, auth_status, username = authenticator.login("Login", "sidebar")
     return name, auth_status, username
 
+# ─────────────────────────────────────────────
+# Logout UI
+# ─────────────────────────────────────────────
 def logout_ui(authenticator, name):
     authenticator.logout("Logout", "sidebar")
     st.sidebar.success(f"Logged in as {name}")
 
-def is_viewer(username, viewer_username):
-    return username == viewer_username
+# ─────────────────────────────────────────────
+# Role detection
+# ─────────────────────────────────────────────
+def get_user_role(username):
+    return st.secrets["users"].get(username, {}).get("role", "viewer")
 
+def is_viewer(username):
+    return get_user_role(username) == "viewer"
+
+def is_admin(username):
+    return get_user_role(username) == "admin"
+
+# ─────────────────────────────────────────────
+# Session info display
+# ─────────────────────────────────────────────
 def session_info(username, name):
     login_time = datetime.utcnow().isoformat()
-    st.sidebar.markdown(f"**User**: {username}")
-    st.sidebar.markdown(f"**Login (UTC)**: {login_time}")
+    st.sidebar.markdown(f"👤 **{name}** ({username})")
+    st.sidebar.caption(f"🔒 Session started: {login_time[:16]} UTC")
     return login_time
