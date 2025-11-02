@@ -2,6 +2,9 @@ import streamlit as st
 import streamlit_authenticator as stauth
 from datetime import datetime
 
+# ─────────────────────────────────────────────
+# Initialize authenticator
+# ─────────────────────────────────────────────
 def init_authenticator():
     settings = st.secrets["settings"]
     authenticator = stauth.Authenticate(
@@ -12,6 +15,9 @@ def init_authenticator():
     )
     return authenticator
 
+# ─────────────────────────────────────────────
+# Login UI
+# ─────────────────────────────────────────────
 def login_ui(authenticator):
     name, auth_status, username = authenticator.login(
         form_name="Login",
@@ -19,10 +25,16 @@ def login_ui(authenticator):
     )
     return name, auth_status, username
 
+# ─────────────────────────────────────────────
+# Logout UI
+# ─────────────────────────────────────────────
 def logout_ui(authenticator, name):
     authenticator.logout("Logout", "sidebar")
     st.sidebar.success(f"Logged in as {name}")
 
+# ─────────────────────────────────────────────
+# Role detection
+# ─────────────────────────────────────────────
 def get_user_role(username):
     return "viewer" if username in ["colin", "halley"] else "admin"
 
@@ -32,6 +44,9 @@ def is_viewer(username):
 def is_admin(username):
     return get_user_role(username) == "admin"
 
+# ─────────────────────────────────────────────
+# Session info display
+# ─────────────────────────────────────────────
 def session_info(username, name):
     login_time = datetime.utcnow().isoformat()
     st.sidebar.markdown(f"👤 **{name}** ({username})")
